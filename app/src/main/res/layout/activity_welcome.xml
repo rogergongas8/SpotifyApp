@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/spotify_bg"
+    android:padding="30dp">
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/spotifylogo"
+        android:layout_marginBottom="30dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bienvenido"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="50dp"/>
+
+    <Button
+        android:id="@+id/btnEntrar_RGG"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="ENTRAR"
+        android:textStyle="bold"
+        android:backgroundTint="@color/spotify_green"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:layout_marginHorizontal="20dp"/>
+
+</LinearLayout>

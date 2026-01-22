@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/spotify_bg"
+    android:gravity="center"
+    android:padding="20dp">
+
+    <ImageView
+        android:id="@+id/imgCaratula_RGG"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginBottom="20dp"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:scaleType="centerCrop"
+        android:background="@color/spotify_gray"/>
+
+    <TextView
+        android:id="@+id/txtTitulo_RGG"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Título Canción"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="marquee"/>
+
+    <SeekBar
+        android:id="@+id/seekBar_RGG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:progressTint="@color/spotify_green"
+        android:thumbTint="@color/spotify_green"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:id="@+id/btnRewind_RGG"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="-10"
+            android:textSize="14sp"
+            android:backgroundTint="@color/spotify_gray"
+            android:textColor="@color/white"
+            android:layout_marginEnd="5dp"/>
+
+        <Button
+            android:id="@+id/btnPlay_RGG"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="PLAY"
+            android:textStyle="bold"
+            android:backgroundTint="@color/spotify_green"
+            android:textColor="@color/white"
+            android:layout_marginEnd="5dp"
+            android:layout_marginStart="5dp"/>
+
+        <Button
+            android:id="@+id/btnForward_RGG"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="+10"
+            android:textSize="14sp"
+            android:backgroundTint="@color/spotify_gray"
+            android:textColor="@color/white"
+            android:layout_marginStart="5dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnPrev_RGG"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="PREV"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@color/text_gray"/>
+
+        <Button
+            android:id="@+id/btnStop_RGG"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="STOP"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@color/text_gray"/>
+
+        <Button
+            android:id="@+id/btnNext_RGG"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="NEXT"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnBack_RGG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Volver a la Lista"
+        android:backgroundTint="@android:color/transparent"
+        android:textColor="@color/text_gray"
+        android:layout_marginTop="20dp"/>
+
+</LinearLayout>
