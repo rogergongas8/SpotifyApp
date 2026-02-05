@@ -35,94 +35,114 @@
                 android:backgroundTint="@color/white"/>
         </LinearLayout>
 
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
+            android:orientation="horizontal"
             android:layout_marginBottom="20dp">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:src="@drawable/musica"
+                    android:scaleType="centerCrop" />
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@drawable/ic_launcher_background"
-                    android:backgroundTint="@color/spotify_gray"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="8dp"
-                    android:gravity="center_vertical"
-                    android:layout_marginEnd="10dp">
-
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:src="@drawable/musica"
-                        android:scaleType="centerCrop"
-                        android:background="@color/spotify_gray"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Música"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@drawable/ic_launcher_background"
-                    android:backgroundTint="@color/spotify_gray"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="8dp"
-                    android:gravity="center_vertical"
-                    android:layout_marginEnd="10dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_menu_call"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Podcasts"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@drawable/ic_launcher_background"
-                    android:backgroundTint="@color/spotify_gray"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="8dp"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_menu_agenda"
-                        android:layout_marginEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Eventos"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
+                    android:text="Música"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
-        </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:src="@drawable/podcast"
+                    android:scaleType="centerCrop" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Podcasts"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:src="@drawable/radio"
+                    android:scaleType="centerCrop" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Radio"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:src="@drawable/relax"
+                    android:scaleType="centerCrop" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Relax"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etBuscador"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/fondo_buscador"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawableTint="#B3B3B3"
+            android:drawablePadding="10dp"
+            android:hint="¿Qué quieres escuchar?"
+            android:textColor="@color/white"
+            android:textColorHint="#B3B3B3"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:maxLines="1"
+            android:layout_marginBottom="15dp"
+            android:paddingHorizontal="12dp"
+            android:visibility="gone"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -138,12 +158,10 @@
             android:layout_height="wrap_content"
             android:scrollbars="none"
             android:layout_marginBottom="25dp">
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
                 <LinearLayout
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
@@ -163,7 +181,6 @@
                         android:textSize="12sp"
                         android:layout_marginTop="5dp"/>
                 </LinearLayout>
-
                 <LinearLayout
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
@@ -183,7 +200,6 @@
                         android:textSize="12sp"
                         android:layout_marginTop="5dp"/>
                 </LinearLayout>
-
                 <LinearLayout
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
@@ -225,70 +241,125 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layoutMiniPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="#282828"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtMiniTitulo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Canción sonando..."
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="marquee"/>
+
+        <ImageView
+            android:id="@+id/btnMiniPlay"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_pause"
+            android:backgroundTint="@color/white"
+            android:layout_marginEnd="10dp"/>
+
+        <ImageView
+            android:id="@+id/btnMiniNext"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_next"
+            android:backgroundTint="@color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#121212"
-        android:paddingVertical="10dp"
+        android:paddingVertical="8dp"
         android:gravity="center">
 
         <LinearLayout
+            android:id="@+id/btnNavInicio"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:id="@+id/imgNavInicio"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_rotate"
-                android:backgroundTint="@color/white"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Inicio"
-                android:textColor="@color/white"
-                android:textSize="10sp"/>
+                android:backgroundTint="@color/white"/> <TextView
+            android:id="@+id/txtNavInicio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inicio"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:layout_marginTop="4dp"/>
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/btnNavBuscar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
-            android:alpha="0.6">
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:id="@+id/imgNavBuscar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_search"
-                android:backgroundTint="@color/white"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Buscar"
-                android:textColor="@color/white"
-                android:textSize="10sp"/>
+                android:backgroundTint="#B3B3B3"/> <TextView
+            android:id="@+id/txtNavBuscar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buscar"
+            android:textColor="#B3B3B3"
+            android:textSize="10sp"
+            android:layout_marginTop="4dp"/>
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/btnNavBiblio"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
             android:alpha="0.6">
+
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_sort_by_size"
                 android:backgroundTint="@color/white"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tu Biblioteca"
+                android:text="Biblioteca"
                 android:textColor="@color/white"
-                android:textSize="10sp"/>
+                android:textSize="10sp"
+                android:layout_marginTop="4dp"/>
         </LinearLayout>
 
     </LinearLayout>
