@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.media)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)

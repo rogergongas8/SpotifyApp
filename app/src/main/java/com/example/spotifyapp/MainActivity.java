@@ -1,6 +1,10 @@
 package com.example.spotifyapp;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -15,7 +19,6 @@ import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,87 +38,171 @@ public class MainActivity extends AppCompatActivity {
     private CancionAdapter adapter_RGG;
     private static final int CODIGO_PERMISO_RGG = 100;
 
-    // Mini Player
     private LinearLayout layoutMiniPlayer;
     private TextView txtMiniTitulo;
     private ImageView btnMiniPlay, btnMiniNext;
 
-    // Navegación y Buscador
     private EditText etBuscador;
     private LinearLayout btnNavInicio, btnNavBuscar;
     private ImageView imgNavInicio, imgNavBuscar;
     private TextView txtNavInicio, txtNavBuscar;
 
-    // Copia para filtrar sin perder datos
     private ArrayList<Cancion> listaCompletaOriginal = new ArrayList<>();
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle extras = intent.getExtras();
+            if (extras == null) return;
+            String action = extras.getString("actionname");
+            if (action != null) {
+                switch (action) {
+                    case CreateNotification.ACTION_PREVIOUS:
+                        onTrackPrevious();
+                        break;
+                    case CreateNotification.ACTION_PLAY:
+                        if (DataHolder.isPlaying) onTrackPause();
+                        else onTrackPlay();
+                        break;
+                    case CreateNotification.ACTION_NEXT:
+                        onTrackNext();
+                        break;
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // --- 1. VINCULAR VISTAS ---
-        listView_RGG = findViewById(R.id.listaCanciones_RGG);
+        CreateNotification.createNotificationChannel(this);
+        
+        IntentFilter filter = new IntentFilter("TRACKS_TRACKS");
+        ContextCompat.registerReceiver(this, broadcastReceiver, filter, ContextCompat.RECEIVER_EXPORTED);
 
-        // Mini Player
+        listView_RGG = findViewById(R.id.listaCanciones_RGG);
         layoutMiniPlayer = findViewById(R.id.layoutMiniPlayer);
         txtMiniTitulo = findViewById(R.id.txtMiniTitulo);
         btnMiniPlay = findViewById(R.id.btnMiniPlay);
         btnMiniNext = findViewById(R.id.btnMiniNext);
-
-        // Buscador
         etBuscador = findViewById(R.id.etBuscador);
-
-        // Botones Menú Inferior
         btnNavInicio = findViewById(R.id.btnNavInicio);
         btnNavBuscar = findViewById(R.id.btnNavBuscar);
-
-        // Iconos y Textos (Para cambiar color)
         imgNavInicio = findViewById(R.id.imgNavInicio);
         txtNavInicio = findViewById(R.id.txtNavInicio);
         imgNavBuscar = findViewById(R.id.imgNavBuscar);
         txtNavBuscar = findViewById(R.id.txtNavBuscar);
 
-        // --- 2. CONFIGURAR LÓGICA ---
         configurarMiniPlayer();
         configurarNavegacion();
-
         checkPermisos_RGG();
     }
 
-    private void configurarNavegacion() {
-        // --- BOTÓN INICIO ---
-        btnNavInicio.setOnClickListener(v -> {
-            actualizarMenuInferior(0); // Poner blanco Inicio
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // RECUERDA: Esto hace que el mini-player aparezca al volver al listado
+        actualizarVistaMiniPlayer();
+    }
 
-            // Ocultar buscador y resetear lista
+    private void onTrackPlay() {
+        if (DataHolder.mediaPlayerGlobal != null) {
+            DataHolder.mediaPlayerGlobal.start();
+            DataHolder.isPlaying = true;
+            actualizarVistaMiniPlayer();
+            actualizarNotificacion_RGG(android.R.drawable.ic_media_pause);
+        }
+    }
+
+    private void onTrackPause() {
+        if (DataHolder.mediaPlayerGlobal != null) {
+            DataHolder.mediaPlayerGlobal.pause();
+            DataHolder.isPlaying = false;
+            actualizarVistaMiniPlayer();
+            actualizarNotificacion_RGG(android.R.drawable.ic_media_play);
+        }
+    }
+
+    private void onTrackNext() {
+        if (DataHolder.listaCancionesGlobal.isEmpty()) return;
+        int nuevaPos = (DataHolder.posicionActualGlobal + 1) % DataHolder.listaCancionesGlobal.size();
+        reproducirNueva_RGG(nuevaPos);
+    }
+
+    private void onTrackPrevious() {
+        if (DataHolder.listaCancionesGlobal.isEmpty()) return;
+        int nuevaPos = (DataHolder.posicionActualGlobal - 1 + DataHolder.listaCancionesGlobal.size()) % DataHolder.listaCancionesGlobal.size();
+        reproducirNueva_RGG(nuevaPos);
+    }
+
+    private void reproducirNueva_RGG(int pos) {
+        DataHolder.posicionActualGlobal = pos;
+        if (DataHolder.mediaPlayerGlobal != null) {
+            try {
+                DataHolder.mediaPlayerGlobal.stop();
+                DataHolder.mediaPlayerGlobal.release();
+            } catch (Exception ignored) {}
+        }
+        try {
+            Cancion c = DataHolder.listaCancionesGlobal.get(pos);
+            DataHolder.mediaPlayerGlobal = new MediaPlayer();
+            DataHolder.mediaPlayerGlobal.setDataSource(c.getPath());
+            DataHolder.mediaPlayerGlobal.prepareAsync();
+            DataHolder.mediaPlayerGlobal.setOnPreparedListener(mp -> {
+                mp.setVolume(1.0f, 1.0f);
+                mp.start();
+                DataHolder.isPlaying = true;
+                actualizarVistaMiniPlayer();
+                CreateNotification.createNotification(this, c, android.R.drawable.ic_media_pause, pos, DataHolder.listaCancionesGlobal.size());
+            });
+            DataHolder.mediaPlayerGlobal.setOnCompletionListener(mp -> onTrackNext());
+        } catch (Exception ignored) { }
+    }
+
+    private void configurarMiniPlayer() {
+        btnMiniPlay.setOnClickListener(v -> {
+            if (DataHolder.isPlaying) onTrackPause();
+            else onTrackPlay();
+        });
+        btnMiniNext.setOnClickListener(v -> onTrackNext());
+        
+        // Abrir el reproductor al tocar el mini-player
+        layoutMiniPlayer.setOnClickListener(v -> {
+            Intent intent = new Intent(this, PlayerActivity.class);
+            intent.putExtra("posicion_cancion", DataHolder.posicionActualGlobal);
+            startActivity(intent);
+        });
+    }
+
+    private void actualizarNotificacion_RGG(int icon) {
+        if (DataHolder.posicionActualGlobal != -1) {
+            Cancion c = DataHolder.listaCancionesGlobal.get(DataHolder.posicionActualGlobal);
+            CreateNotification.createNotification(this, c, icon, DataHolder.posicionActualGlobal, DataHolder.listaCancionesGlobal.size());
+        }
+    }
+
+    private void actualizarVistaMiniPlayer() {
+        if (DataHolder.mediaPlayerGlobal != null && DataHolder.posicionActualGlobal != -1) {
+            layoutMiniPlayer.setVisibility(View.VISIBLE);
+            txtMiniTitulo.setText(DataHolder.listaCancionesGlobal.get(DataHolder.posicionActualGlobal).getTitulo());
+            btnMiniPlay.setImageResource(DataHolder.isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+        } else {
+            layoutMiniPlayer.setVisibility(View.GONE);
+        }
+    }
+
+    private void configurarNavegacion() {
+        btnNavInicio.setOnClickListener(v -> {
+            actualizarMenuInferior(0);
             etBuscador.setVisibility(View.GONE);
             etBuscador.setText("");
-
-            // Ocultar teclado
-            View view = this.getCurrentFocus();
-            if (view != null) {
-                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
         });
-
-        // --- BOTÓN BUSCAR ---
         btnNavBuscar.setOnClickListener(v -> {
-            actualizarMenuInferior(1); // Poner blanco Buscar
-
-            if (etBuscador.getVisibility() == View.VISIBLE) {
-                etBuscador.setVisibility(View.GONE);
-            } else {
-                etBuscador.setVisibility(View.VISIBLE);
-                etBuscador.requestFocus();
-                // Mostrar teclado
-                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                imm.showSoftInput(etBuscador, InputMethodManager.SHOW_IMPLICIT);
-            }
+            actualizarMenuInferior(1);
+            etBuscador.setVisibility(etBuscador.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         });
-
-        // --- FILTRO DE BÚSQUEDA ---
         etBuscador.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
@@ -129,177 +216,86 @@ public class MainActivity extends AppCompatActivity {
     private void actualizarMenuInferior(int opcion) {
         int colorActivo = Color.WHITE;
         int colorInactivo = Color.parseColor("#B3B3B3");
-
-        if (opcion == 0) { // INICIO ACTIVO
-            imgNavInicio.setImageTintList(ColorStateList.valueOf(colorActivo));
-            txtNavInicio.setTextColor(colorActivo);
-
-            imgNavBuscar.setImageTintList(ColorStateList.valueOf(colorInactivo));
-            txtNavBuscar.setTextColor(colorInactivo);
-        } else if (opcion == 1) { // BUSCAR ACTIVO
-            imgNavInicio.setImageTintList(ColorStateList.valueOf(colorInactivo));
-            txtNavInicio.setTextColor(colorInactivo);
-
-            imgNavBuscar.setImageTintList(ColorStateList.valueOf(colorActivo));
-            txtNavBuscar.setTextColor(colorActivo);
-        }
+        imgNavInicio.setImageTintList(ColorStateList.valueOf(opcion == 0 ? colorActivo : colorInactivo));
+        txtNavInicio.setTextColor(opcion == 0 ? colorActivo : colorInactivo);
+        imgNavBuscar.setImageTintList(ColorStateList.valueOf(opcion == 1 ? colorActivo : colorInactivo));
+        txtNavBuscar.setTextColor(opcion == 1 ? colorActivo : colorInactivo);
     }
 
     private void filtrarCanciones(String texto) {
         ArrayList<Cancion> listaFiltrada = new ArrayList<>();
         for (Cancion c : listaCompletaOriginal) {
-            if (c.getTitulo().toLowerCase().contains(texto.toLowerCase())) {
-                listaFiltrada.add(c);
-            }
+            if (c.getTitulo().toLowerCase().contains(texto.toLowerCase())) listaFiltrada.add(c);
         }
-        adapter_RGG = new CancionAdapter(MainActivity.this, listaFiltrada);
+        adapter_RGG = new CancionAdapter(this, listaFiltrada);
         listView_RGG.setAdapter(adapter_RGG);
     }
 
     private void cargarMusica_RGG() {
-        // --- OPTIMIZACIÓN DE VELOCIDAD ---
-        // Si ya tenemos canciones, NO volvemos a leer archivos.
         if (!DataHolder.listaCancionesGlobal.isEmpty()) {
             listaCompletaOriginal = new ArrayList<>(DataHolder.listaCancionesGlobal);
             adapter_RGG = new CancionAdapter(this, DataHolder.listaCancionesGlobal);
             listView_RGG.setAdapter(adapter_RGG);
+            actualizarVistaMiniPlayer(); // Asegurar mini-player al recargar
             return;
         }
-
-        File directorioDownload = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (directorioDownload == null || !directorioDownload.exists()) {
-            Toast.makeText(this, "No encuentro la carpeta Download", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        File[] archivos = directorioDownload.listFiles();
-        if (archivos != null) {
-            for (File archivo : archivos) {
-                if (archivo.getName().toLowerCase().endsWith(".mp3")) {
-                    agregarCancion_RGG(archivo);
+        File d = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (d != null && d.exists()) {
+            File[] archivos = d.listFiles();
+            if (archivos != null) {
+                for (File f : archivos) {
+                    if (f.getName().toLowerCase().endsWith(".mp3")) agregarCancion_RGG(f);
                 }
             }
         }
-
-        // Guardamos copia
         listaCompletaOriginal = new ArrayList<>(DataHolder.listaCancionesGlobal);
         adapter_RGG = new CancionAdapter(this, DataHolder.listaCancionesGlobal);
         listView_RGG.setAdapter(adapter_RGG);
     }
 
-    // --- MÉTODOS ESTÁNDAR (IGUALES QUE ANTES) ---
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        actualizarVistaMiniPlayer();
-    }
-
-    private void configurarMiniPlayer() {
-        btnMiniPlay.setOnClickListener(v -> {
-            if (DataHolder.mediaPlayerGlobal != null) {
-                if (DataHolder.mediaPlayerGlobal.isPlaying()) {
-                    DataHolder.mediaPlayerGlobal.pause();
-                    DataHolder.isPlaying = false;
-                    btnMiniPlay.setImageResource(android.R.drawable.ic_media_play);
-                } else {
-                    DataHolder.mediaPlayerGlobal.start();
-                    DataHolder.isPlaying = true;
-                    btnMiniPlay.setImageResource(android.R.drawable.ic_media_pause);
-                }
-            }
-        });
-
-        btnMiniNext.setOnClickListener(v -> {
-            if (DataHolder.listaCancionesGlobal.isEmpty() || DataHolder.posicionActualGlobal == -1) return;
-
-            // Usamos la lista COMPLETA original para calcular el siguiente,
-            // así el orden no se rompe si estamos filtrando
-            int size = DataHolder.listaCancionesGlobal.size();
-            int nuevaPosicion = (DataHolder.posicionActualGlobal + 1) % size;
-
-            DataHolder.posicionActualGlobal = nuevaPosicion;
-
-            if (DataHolder.mediaPlayerGlobal != null) {
-                DataHolder.mediaPlayerGlobal.stop();
-                DataHolder.mediaPlayerGlobal.release();
-            }
-            try {
-                Cancion siguienteCancion = DataHolder.listaCancionesGlobal.get(nuevaPosicion);
-                Uri uri = Uri.parse(siguienteCancion.getPath());
-                DataHolder.mediaPlayerGlobal = MediaPlayer.create(this, uri);
-                DataHolder.mediaPlayerGlobal.start();
-                DataHolder.isPlaying = true;
-
-                DataHolder.mediaPlayerGlobal.setOnCompletionListener(mp -> btnMiniNext.performClick());
-
-                txtMiniTitulo.setText(siguienteCancion.getTitulo());
-                btnMiniPlay.setImageResource(android.R.drawable.ic_media_pause);
-            } catch (Exception e) { e.printStackTrace(); }
-        });
-    }
-
-    private void actualizarVistaMiniPlayer() {
-        if (DataHolder.mediaPlayerGlobal != null && DataHolder.posicionActualGlobal != -1) {
-            layoutMiniPlayer.setVisibility(View.VISIBLE);
-            try {
-                String titulo = DataHolder.listaCancionesGlobal.get(DataHolder.posicionActualGlobal).getTitulo();
-                txtMiniTitulo.setText(titulo);
-            } catch (Exception e) { txtMiniTitulo.setText("..."); }
-
-            if (DataHolder.mediaPlayerGlobal.isPlaying()) {
-                btnMiniPlay.setImageResource(android.R.drawable.ic_media_pause);
-            } else {
-                btnMiniPlay.setImageResource(android.R.drawable.ic_media_play);
-            }
-        } else {
-            layoutMiniPlayer.setVisibility(View.GONE);
-        }
-    }
-
     private void checkPermisos_RGG() {
-        String permisoNecesario;
+        ArrayList<String> permisos = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= 33) {
-            permisoNecesario = Manifest.permission.READ_MEDIA_AUDIO;
+            permisos.add(Manifest.permission.READ_MEDIA_AUDIO);
+            permisos.add(Manifest.permission.POST_NOTIFICATIONS);
         } else {
-            permisoNecesario = Manifest.permission.READ_EXTERNAL_STORAGE;
+            permisos.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
 
-        if (ContextCompat.checkSelfPermission(this, permisoNecesario) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{permisoNecesario}, CODIGO_PERMISO_RGG);
-        } else {
-            cargarMusica_RGG();
+        ArrayList<String> noConcedidos = new ArrayList<>();
+        for (String p : permisos) {
+            if (ContextCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) noConcedidos.add(p);
         }
+
+        if (!noConcedidos.isEmpty()) {
+            ActivityCompat.requestPermissions(this, noConcedidos.toArray(new String[0]), CODIGO_PERMISO_RGG);
+        } else cargarMusica_RGG();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CODIGO_PERMISO_RGG) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                cargarMusica_RGG();
-            } else {
-                Toast.makeText(this, "Es necesario dar permisos", Toast.LENGTH_LONG).show();
-            }
+            boolean todosAceptados = true;
+            for (int res : grantResults) if (res != PackageManager.PERMISSION_GRANTED) todosAceptados = false;
+            if (todosAceptados) cargarMusica_RGG();
         }
     }
 
     private void agregarCancion_RGG(File archivo) {
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        try {
+        try (MediaMetadataRetriever mmr = new MediaMetadataRetriever()) {
             mmr.setDataSource(archivo.getAbsolutePath());
-            String titulo = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            String artista = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            byte[] artBytes = mmr.getEmbeddedPicture();
+            String t = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            String a = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            byte[] b = mmr.getEmbeddedPicture();
+            Bitmap caratula = b != null ? BitmapFactory.decodeByteArray(b, 0, b.length) : null;
+            DataHolder.listaCancionesGlobal.add(new Cancion(t != null ? t : archivo.getName(), a != null ? a : "Desconocido", archivo.getAbsolutePath(), caratula));
+        } catch (Exception ignored) {}
+    }
 
-            if (titulo == null) titulo = archivo.getName();
-            if (artista == null) artista = "Desconocido";
-
-            Bitmap caratula = null;
-            if (artBytes != null) {
-                caratula = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.length);
-            }
-            DataHolder.listaCancionesGlobal.add(new Cancion(titulo, artista, archivo.getAbsolutePath(), caratula));
-        } catch (Exception e) { e.printStackTrace(); }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try { unregisterReceiver(broadcastReceiver); } catch (Exception ignored) {}
     }
 }

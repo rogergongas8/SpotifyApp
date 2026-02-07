@@ -32,6 +32,9 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@android:drawable/ic_menu_preferences"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:backgroundTint="@color/white"/>
         </LinearLayout>
 
@@ -46,6 +49,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:layout_marginEnd="8dp">
                 <ImageView
                     android:layout_width="match_parent"
@@ -67,6 +73,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:layout_marginEnd="8dp">
                 <ImageView
                     android:layout_width="match_parent"
@@ -88,6 +97,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:layout_marginEnd="8dp">
                 <ImageView
                     android:layout_width="match_parent"
@@ -108,7 +120,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
@@ -166,6 +181,9 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_marginEnd="15dp">
                     <ImageView
                         android:layout_width="120dp"
@@ -185,6 +203,9 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_marginEnd="15dp">
                     <ImageView
                         android:layout_width="120dp"
@@ -204,6 +225,9 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_marginEnd="15dp">
                     <ImageView
                         android:layout_width="120dp"
@@ -236,7 +260,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@android:color/transparent"
-            android:dividerHeight="10dp"/>
+            android:dividerHeight="10dp"
+            android:listSelector="@android:color/transparent"/>
 
     </LinearLayout>
 
@@ -266,6 +291,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_media_pause"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:backgroundTint="@color/white"
             android:layout_marginEnd="10dp"/>
 
@@ -274,6 +302,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_media_next"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             android:backgroundTint="@color/white"/>
     </LinearLayout>
 
@@ -346,7 +377,7 @@
             android:orientation="vertical"
             android:clickable="true"
             android:focusable="true"
-            android:alpha="0.6">
+            android:background="?attr/selectableItemBackgroundBorderless">
 
             <ImageView
                 android:layout_width="24dp"

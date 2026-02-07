@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -32,6 +33,8 @@
         <activity
             android:name=".PlayerActivity"
             android:exported="false" />
+
+        <receiver android:name=".NotificationActionService" />
 
     </application>
 

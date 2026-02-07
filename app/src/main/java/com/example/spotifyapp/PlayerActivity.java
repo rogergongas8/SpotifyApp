@@ -1,5 +1,6 @@
 package com.example.spotifyapp;
 
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 
@@ -19,7 +21,6 @@ public class PlayerActivity extends AppCompatActivity {
     private Button btnPlay_RGG, btnStop_RGG, btnNext_RGG, btnPrev_RGG,
             btnForward_RGG, btnRewind_RGG, btnBack_RGG;
 
-    // YA NO usamos mediaPlayer local, usamos el de DataHolder
     private ArrayList<Cancion> listaCanciones_RGG;
     private int posicionActual_RGG;
     private Handler handler_RGG = new Handler();
@@ -30,31 +31,22 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
 
         inicializarVistas_RGG();
-
         listaCanciones_RGG = DataHolder.listaCancionesGlobal;
 
-        // Recuperamos qué canción se pidió
         int posicionSolicitada = getIntent().getIntExtra("posicion_cancion", -1);
 
-        // LÓGICA INTELIGENTE:
-        // Si ya está sonando la misma canción que pedimos, NO la reiniciamos.
-        // Solo actualizamos la interfaz.
         if (DataHolder.mediaPlayerGlobal != null &&
-                DataHolder.mediaPlayerGlobal.isPlaying() &&
-                posicionSolicitada == DataHolder.posicionActualGlobal) {
-
+                DataHolder.posicionActualGlobal == posicionSolicitada) {
             posicionActual_RGG = DataHolder.posicionActualGlobal;
-            actualizarInterfazUsuario(); // Solo pintamos textos y fotos
-            actualizarSeekBar_RGG();     // Enganchamos la barra de progreso
-            btnPlay_RGG.setText("PAUSA");
-
+            actualizarInterfazUsuario();
+            if (DataHolder.mediaPlayerGlobal.isPlaying()) {
+                btnPlay_RGG.setText("PAUSA");
+                actualizarSeekBar_RGG();
+            }
         } else {
-            // Si es una canción nueva, reproducimos desde cero
             posicionActual_RGG = posicionSolicitada;
             reproducirCancion_RGG();
         }
-
-        // --- BOTONES ---
 
         btnPlay_RGG.setOnClickListener(v -> {
             if (DataHolder.mediaPlayerGlobal != null) {
@@ -66,7 +58,9 @@ public class PlayerActivity extends AppCompatActivity {
                     DataHolder.mediaPlayerGlobal.start();
                     DataHolder.isPlaying = true;
                     btnPlay_RGG.setText("PAUSA");
+                    actualizarSeekBar_RGG();
                 }
+                actualizarNotificacion_RGG(DataHolder.isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
             }
         });
 
@@ -76,6 +70,7 @@ public class PlayerActivity extends AppCompatActivity {
                 DataHolder.mediaPlayerGlobal.seekTo(0);
                 DataHolder.isPlaying = false;
                 btnPlay_RGG.setText("PLAY");
+                actualizarNotificacion_RGG(android.R.drawable.ic_media_play);
             }
         });
 
@@ -89,32 +84,26 @@ public class PlayerActivity extends AppCompatActivity {
         btnRewind_RGG.setOnClickListener(v -> {
             if (DataHolder.mediaPlayerGlobal != null) {
                 int currentPos = DataHolder.mediaPlayerGlobal.getCurrentPosition();
-                int newPos = currentPos - 10000;
-                if (newPos < 0) newPos = 0;
+                int newPos = Math.max(0, currentPos - 10000);
                 DataHolder.mediaPlayerGlobal.seekTo(newPos);
             }
         });
 
-        // Siguiente
         btnNext_RGG.setOnClickListener(v -> {
-            if (listaCanciones_RGG.size() > 0) {
+            if (!listaCanciones_RGG.isEmpty()) {
                 posicionActual_RGG = (posicionActual_RGG + 1) % listaCanciones_RGG.size();
                 reproducirCancion_RGG();
             }
         });
 
-        // Anterior
         btnPrev_RGG.setOnClickListener(v -> {
-            if (listaCanciones_RGG.size() > 0) {
-                posicionActual_RGG--;
-                if (posicionActual_RGG < 0) {
-                    posicionActual_RGG = listaCanciones_RGG.size() - 1;
-                }
+            if (!listaCanciones_RGG.isEmpty()) {
+                posicionActual_RGG = (posicionActual_RGG - 1 + listaCanciones_RGG.size()) % listaCanciones_RGG.size();
                 reproducirCancion_RGG();
             }
         });
 
-        btnBack_RGG.setOnClickListener(v -> finish()); // Solo cierra la actividad, NO para la música
+        btnBack_RGG.setOnClickListener(v -> finish());
 
         seekBar_RGG.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -142,35 +131,52 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void reproducirCancion_RGG() {
-        // 1. Limpiamos el anterior SI existe
         if (DataHolder.mediaPlayerGlobal != null) {
-            DataHolder.mediaPlayerGlobal.stop();
-            DataHolder.mediaPlayerGlobal.release();
+            try {
+                DataHolder.mediaPlayerGlobal.stop();
+                DataHolder.mediaPlayerGlobal.release();
+            } catch (Exception ignored) {}
+            DataHolder.mediaPlayerGlobal = null;
         }
 
-        // 2. Guardamos la posición global para que MainActivity sepa cuál es
         DataHolder.posicionActualGlobal = posicionActual_RGG;
         Cancion cancionActual = listaCanciones_RGG.get(posicionActual_RGG);
-
-        // 3. Actualizamos UI
         actualizarInterfazUsuario();
 
-        // 4. Creamos el MediaPlayer en la variable GLOBAL
-        Uri uri = Uri.parse(cancionActual.getPath());
-        DataHolder.mediaPlayerGlobal = MediaPlayer.create(this, uri);
-
-        if (DataHolder.mediaPlayerGlobal != null) {
-            DataHolder.mediaPlayerGlobal.setOnCompletionListener(mp -> {
-                btnNext_RGG.performClick();
+        try {
+            DataHolder.mediaPlayerGlobal = new MediaPlayer();
+            
+            // CONFIGURACIÓN DE AUDIO PROFESIONAL
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            DataHolder.mediaPlayerGlobal.setAudioAttributes(audioAttributes);
+            
+            DataHolder.mediaPlayerGlobal.setDataSource(cancionActual.getPath());
+            DataHolder.mediaPlayerGlobal.prepareAsync();
+            DataHolder.mediaPlayerGlobal.setOnPreparedListener(mp -> {
+                mp.setVolume(1.0f, 1.0f);
+                mp.start();
+                DataHolder.isPlaying = true;
+                btnPlay_RGG.setText("PAUSA");
+                seekBar_RGG.setMax(mp.getDuration());
+                actualizarSeekBar_RGG();
+                CreateNotification.createNotification(this, cancionActual, android.R.drawable.ic_media_pause, posicionActual_RGG, listaCanciones_RGG.size());
             });
-
-            DataHolder.mediaPlayerGlobal.start();
-            DataHolder.isPlaying = true;
-
-            btnPlay_RGG.setText("PAUSA");
-            seekBar_RGG.setMax(DataHolder.mediaPlayerGlobal.getDuration());
-            actualizarSeekBar_RGG();
+            DataHolder.mediaPlayerGlobal.setOnErrorListener((mp, what, extra) -> {
+                Toast.makeText(this, "Error de reproducción", Toast.LENGTH_SHORT).show();
+                return false;
+            });
+            DataHolder.mediaPlayerGlobal.setOnCompletionListener(mp -> btnNext_RGG.performClick());
+        } catch (Exception e) {
+            Toast.makeText(this, "No se pudo cargar el archivo", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void actualizarNotificacion_RGG(int icon) {
+        Cancion c = listaCanciones_RGG.get(posicionActual_RGG);
+        CreateNotification.createNotification(this, c, icon, posicionActual_RGG, listaCanciones_RGG.size());
     }
 
     private void actualizarInterfazUsuario() {
@@ -184,13 +190,15 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void actualizarSeekBar_RGG() {
+        handler_RGG.removeCallbacksAndMessages(null);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (DataHolder.mediaPlayerGlobal != null && DataHolder.mediaPlayerGlobal.isPlaying()) {
-                    seekBar_RGG.setProgress(DataHolder.mediaPlayerGlobal.getCurrentPosition());
+                if (DataHolder.mediaPlayerGlobal != null) {
+                    try {
+                        seekBar_RGG.setProgress(DataHolder.mediaPlayerGlobal.getCurrentPosition());
+                    } catch (Exception ignored) {}
                 }
-                // Revisamos cada segundo si sigue vivo
                 if (!isFinishing()) {
                     handler_RGG.postDelayed(this, 1000);
                 }
@@ -201,8 +209,6 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // IMPORTANTE: Ya NO hacemos release() aquí.
-        // Solo paramos el handler de la barrita para que no de error de memoria.
         handler_RGG.removeCallbacksAndMessages(null);
     }
 }
